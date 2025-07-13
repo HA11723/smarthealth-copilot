@@ -1,0 +1,29 @@
+[
+  {
+    "symptom": "chest pain",
+    "categories": ["cardiovascular", "respiratory", "gastrointestinal"],
+    "urgency_levels": {
+      "high": ["crushing chest pain", "chest pain with shortness of breath", "chest pain radiating to arm"],
+      "medium": ["mild chest discomfort", "chest pain with exertion"],
+      "low": ["chest tenderness", "chest pain with movement"]
+    }
+  },
+  {
+    "symptom": "headache",
+    "categories": ["neurological", "vascular", "tension"],
+    "urgency_levels": {
+      "high": ["sudden severe headache", "headache with confusion", "headache with fever"],
+      "medium": ["moderate headache", "migraine"],
+      "low": ["mild tension headache", "headache with stress"]
+    }
+  },
+  {
+    "symptom": "shortness of breath",
+    "categories": ["respiratory", "cardiovascular", "anxiety"],
+    "urgency_levels": {
+      "high": ["sudden shortness of breath", "shortness of breath with chest pain"],
+      "medium": ["shortness of breath with exertion"],
+      "low": ["mild shortness of breath", "shortness of breath with anxiety"]
+    }
+  }
+] 

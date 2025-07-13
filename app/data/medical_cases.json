@@ -1,0 +1,20 @@
+[
+  {
+    "id": "case_001",
+    "age": 45,
+    "gender": "male",
+    "symptoms": ["chest tightness", "shortness of breath", "fatigue"],
+    "diagnosis": "angina pectoris",
+    "urgency": "high",
+    "description": "45-year-old male presenting with chest tightness and shortness of breath, likely cardiovascular in nature"
+  },
+  {
+    "id": "case_002", 
+    "age": 32,
+    "gender": "female",
+    "symptoms": ["headache", "nausea", "light sensitivity"],
+    "diagnosis": "migraine",
+    "urgency": "medium",
+    "description": "32-year-old female with severe headache, nausea, and light sensitivity consistent with migraine"
+  }
+] 
