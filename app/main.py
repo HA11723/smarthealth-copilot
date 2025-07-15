@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 import json
 from openai import OpenAI
 from typing import List, Dict, Any, Optional
+import io
+from google.cloud import vision
 
 # Add the project root to Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -316,6 +318,80 @@ Focus on cardiovascular, respiratory, and neurological symptoms as these are mos
             }
 
 
+def analyze_image_with_vision_api(image_bytes: bytes):
+    """Send image bytes to Google Cloud Vision API and return labels/results."""
+    client = vision.ImageAnnotatorClient()
+    image = vision.Image(content=image_bytes)
+    response = client.label_detection(image=image)
+    labels = response.label_annotations
+    results = []
+    for label in labels:
+        results.append({
+            'description': label.description,
+            'score': label.score
+        })
+    return results
+
+
+def load_doctors_data():
+    """Load doctors database"""
+    try:
+        with open('app/data/doctors.json', 'r') as f:
+            doctors = json.load(f)
+        return doctors
+    except FileNotFoundError:
+        return []
+
+
+def match_symptoms_to_doctor(symptoms: List[str], doctors: List[Dict]) -> Optional[Dict]:
+    """Match user symptoms to the most appropriate doctor"""
+    if not doctors:
+        return None
+
+    # Create a mapping of symptoms to specialties
+    symptom_specialty_mapping = {
+        'headache': 'Headache Specialist',
+        'migraine': 'Headache Specialist',
+        'head pain': 'Headache Specialist',
+        'skin': 'Dermatologist',
+        'rash': 'Dermatologist',
+        'acne': 'Dermatologist',
+        'dermatology': 'Dermatologist',
+        'bone': 'Orthopedic Surgeon',
+        'joint': 'Orthopedic Surgeon',
+        'fracture': 'Orthopedic Surgeon',
+        'sprain': 'Orthopedic Surgeon',
+        'orthopedic': 'Orthopedic Surgeon',
+        'heart': 'Cardiologist',
+        'chest pain': 'Cardiologist',
+        'cardiac': 'Cardiologist',
+        'child': 'Pediatrician',
+        'pediatric': 'Pediatrician',
+        'baby': 'Pediatrician',
+        'infant': 'Pediatrician'
+    }
+
+    # Check user symptoms against the mapping
+    user_symptoms_lower = [s.lower() for s in symptoms]
+    matched_specialty = None
+
+    for symptom in user_symptoms_lower:
+        for key, specialty in symptom_specialty_mapping.items():
+            if key in symptom or symptom in key:
+                matched_specialty = specialty
+                break
+        if matched_specialty:
+            break
+
+    # Find the doctor with the matched specialty
+    if matched_specialty:
+        for doctor in doctors:
+            if doctor['specialty'] == matched_specialty:
+                return doctor
+
+    return None
+
+
 def main():
     # Page configuration
     st.set_page_config(
@@ -329,8 +405,33 @@ def main():
     st.markdown("### Your AI-Powered Medical Assistant")
     st.markdown("---")
 
+    st.header("\U0001F4F7 Injury/Condition Image Analysis (Beta)")
+    uploaded_file = st.file_uploader(
+        "Upload an image of your injury or condition (e.g., arm, leg, skin)", type=["jpg", "jpeg", "png"])
+    if uploaded_file is not None:
+        image_bytes = uploaded_file.read()
+        try:
+            st.image(image_bytes, caption="Uploaded Image",
+                     use_column_width=True)
+        except Exception as e:
+            st.error(f"Error displaying image: {e}")
+            st.info("Image uploaded successfully but could not be displayed.")
+        with st.spinner("Analyzing image with AI..."):
+            try:
+                results = analyze_image_with_vision_api(image_bytes)
+                if results:
+                    st.success("AI Analysis Results:")
+                    for res in results:
+                        st.write(
+                            f"- **{res['description']}** (confidence: {res['score']:.2f})")
+                else:
+                    st.warning("No significant findings detected.")
+            except Exception as e:
+                st.error(f"Image analysis failed: {e}")
+
     # Load medical data
     medical_cases, symptoms_db = load_medical_data()
+    doctors = load_doctors_data()
 
     # Sidebar for configuration
     with st.sidebar:
@@ -394,7 +495,7 @@ def main():
         if st.button("🔍 Analyze Symptoms", type="primary", use_container_width=True):
             if symptoms.strip():
                 analyze_symptoms(age, gender, symptoms,
-                                 additional_symptoms, medical_cases, symptoms_db)
+                                 additional_symptoms, medical_cases, symptoms_db, doctors)
             else:
                 st.warning("Please enter your symptoms to analyze.")
 
@@ -411,8 +512,15 @@ def main():
         - **Recommendations**: Next steps and advice
         """)
 
+        # Disclaimer
+        st.markdown("---")
+        st.caption("""
+        ⚠️ **Disclaimer**: This is an AI-powered analysis for educational purposes only. 
+        Always consult with a qualified healthcare professional for medical advice.
+        """)
 
-def analyze_symptoms(age, gender, symptoms, additional_symptoms, medical_cases, symptoms_db):
+
+def analyze_symptoms(age, gender, symptoms, additional_symptoms, medical_cases, symptoms_db, doctors):
     """Enhanced symptom analysis using OpenAI and local data"""
 
     # Initialize LLM
@@ -500,6 +608,21 @@ def analyze_symptoms(age, gender, symptoms, additional_symptoms, medical_cases, 
             st.markdown("**💡 Recommendations:**")
             for i, rec in enumerate(analysis["recommendations"], 1):
                 st.info(f"{i}. {rec}")
+
+        # Match to appropriate doctor
+        matched_doctor = match_symptoms_to_doctor(
+            [symptoms] + additional_symptoms, doctors)
+
+        if matched_doctor:
+            st.success(
+                f"🎯 **Recommended Specialist:** {matched_doctor['name']}")
+            st.info(f"**Specialty:** {matched_doctor['specialty']}")
+            st.info(f"**Phone:** {matched_doctor['phone']}")
+            st.info(f"**Email:** {matched_doctor['email']}")
+            st.info(f"**Availability:** {matched_doctor['availability']}")
+        else:
+            st.warning(
+                "No specific specialist matched. Consider consulting a general practitioner.")
 
         # Disclaimer
         st.markdown("---")

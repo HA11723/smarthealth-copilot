@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "name": "Dr. Sarah Thompson",
+    "specialty": "Headache Specialist",
+    "phone": "+1-555-101-2020",
+    "email": "sarah.thompson@clinic.com",
+    "availability": "Mon-Fri 9am-5pm"
+  },
+  {
+    "id": 2,
+    "name": "Dr. Michael Lee",
+    "specialty": "Dermatologist",
+    "phone": "+1-555-202-3030",
+    "email": "michael.lee@clinic.com",
+    "availability": "Tue-Sat 10am-6pm"
+  },
+  {
+    "id": 3,
+    "name": "Dr. Priya Patel",
+    "specialty": "Orthopedic Surgeon",
+    "phone": "+1-555-303-4040",
+    "email": "priya.patel@clinic.com",
+    "availability": "Mon, Wed, Fri 8am-4pm"
+  },
+  {
+    "id": 4,
+    "name": "Dr. James Carter",
+    "specialty": "Cardiologist",
+    "phone": "+1-555-404-5050",
+    "email": "james.carter@clinic.com",
+    "availability": "Mon-Fri 10am-7pm"
+  },
+  {
+    "id": 5,
+    "name": "Dr. Emily Chen",
+    "specialty": "Pediatrician",
+    "phone": "+1-555-505-6060",
+    "email": "emily.chen@clinic.com",
+    "availability": "Tue-Sat 9am-5pm"
+  }
+] 
